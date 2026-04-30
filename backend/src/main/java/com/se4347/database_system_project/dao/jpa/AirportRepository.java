@@ -1,5 +1,9 @@
 package com.se4347.database_system_project.dao.jpa;
 
-// TODO: extend JpaRepository<Airport, ID> once entity is implemented
-public interface AirportRepository {
+import com.se4347.database_system_project.domain.Airport;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AirportRepository extends JpaRepository<Airport, String> {
+
+    // TODO: ItineraryService
 }

@@ -16,6 +16,7 @@ import java.util.Objects;
 @Table(name = "SEAT")
 public class Seat {
 
+    // Composite PK: a seat is uniquely identified by its number, the date, and the leg it belongs to.
     @Embeddable
     public static class SeatId implements Serializable {
 
@@ -61,6 +62,10 @@ public class Seat {
     @EmbeddedId
     private SeatId id;
 
+    // DATE and LEG_NO are already declared as PK columns in SeatId above.
+    // Because LegInstance itself has a composite PK, @MapsId cannot be used here.
+    // insertable=false, updatable=false tells JPA not to write these columns twice —
+    // they are managed by SeatId, this relationship is read-only for navigation only.
     @ManyToOne
     @JoinColumns({
         @JoinColumn(name = "DATE", referencedColumnName = "DATE", insertable = false, updatable = false),

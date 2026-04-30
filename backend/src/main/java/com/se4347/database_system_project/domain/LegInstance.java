@@ -15,6 +15,7 @@ import java.util.Objects;
 @Table(name = "LEG_INSTANCE")
 public class LegInstance {
 
+    // Composite PK: the same leg can run on many dates, so the PK is (date + leg number).
     @Embeddable
     public static class LegInstanceId implements Serializable {
 
