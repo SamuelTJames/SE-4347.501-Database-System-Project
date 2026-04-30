@@ -1,3 +1,4 @@
 .env*
 !.env*.example
 REMAINING_WORK.md
+backend/target/

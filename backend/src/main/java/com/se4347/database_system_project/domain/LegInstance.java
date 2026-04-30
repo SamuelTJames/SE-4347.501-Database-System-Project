@@ -5,6 +5,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.io.Serializable;
@@ -15,25 +16,31 @@ import java.util.Objects;
 @Table(name = "LEG_INSTANCE")
 public class LegInstance {
 
-    // Composite PK: the same leg can run on many dates, so the PK is (date + leg number).
     @Embeddable
     public static class LegInstanceId implements Serializable {
 
         @Column(name = "DATE", nullable = false)
         private LocalDate date;
 
+        @Column(name = "NUMBER", nullable = false)
+        private String flightNumber;
+
         @Column(name = "LEG_NO", nullable = false)
         private int legNo;
 
         public LegInstanceId() {}
 
-        public LegInstanceId(LocalDate date, int legNo) {
+        public LegInstanceId(LocalDate date, String flightNumber, int legNo) {
             this.date = date;
+            this.flightNumber = flightNumber;
             this.legNo = legNo;
         }
 
         public LocalDate getDate() { return date; }
         public void setDate(LocalDate date) { this.date = date; }
+
+        public String getFlightNumber() { return flightNumber; }
+        public void setFlightNumber(String flightNumber) { this.flightNumber = flightNumber; }
 
         public int getLegNo() { return legNo; }
         public void setLegNo(int legNo) { this.legNo = legNo; }
@@ -42,17 +49,26 @@ public class LegInstance {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof LegInstanceId that)) return false;
-            return legNo == that.legNo && Objects.equals(date, that.date);
+            return legNo == that.legNo
+                    && Objects.equals(date, that.date)
+                    && Objects.equals(flightNumber, that.flightNumber);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(date, legNo);
+            return Objects.hash(date, flightNumber, legNo);
         }
     }
 
     @EmbeddedId
     private LegInstanceId id;
+
+    @ManyToOne
+    @JoinColumns({
+            @JoinColumn(name = "NUMBER", referencedColumnName = "NUMBER", insertable = false, updatable = false),
+            @JoinColumn(name = "LEG_NO", referencedColumnName = "LEG_NO", insertable = false, updatable = false)
+    })
+    private FlightLeg flightLeg;
 
     @Column(name = "NO_OF_AVAIL_SEATS", nullable = false)
     private int noOfAvailSeats;
@@ -65,6 +81,9 @@ public class LegInstance {
 
     public LegInstanceId getId() { return id; }
     public void setId(LegInstanceId id) { this.id = id; }
+
+    public FlightLeg getFlightLeg() { return flightLeg; }
+    public void setFlightLeg(FlightLeg flightLeg) { this.flightLeg = flightLeg; }
 
     public int getNoOfAvailSeats() { return noOfAvailSeats; }
     public void setNoOfAvailSeats(int noOfAvailSeats) { this.noOfAvailSeats = noOfAvailSeats; }

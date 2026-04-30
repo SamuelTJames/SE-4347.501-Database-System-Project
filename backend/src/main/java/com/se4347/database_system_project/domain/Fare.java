@@ -16,7 +16,6 @@ import java.util.Objects;
 @Table(name = "FARE")
 public class Fare {
 
-    // Composite PK: a fare is uniquely identified by its code AND which flight it belongs to.
     @Embeddable
     public static class FareId implements Serializable {
 
@@ -55,9 +54,6 @@ public class Fare {
     @EmbeddedId
     private FareId id;
 
-    // NUMBER is both an FK to FLIGHT and part of the PK.
-    // @MapsId tells JPA to automatically fill id.flightNumber from this relationship,
-    // so you only need to set the Flight object — no need to set the PK field manually.
     @ManyToOne
     @MapsId("flightNumber")
     @JoinColumn(name = "NUMBER", nullable = false)

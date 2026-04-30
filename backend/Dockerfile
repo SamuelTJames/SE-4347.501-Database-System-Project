@@ -1,7 +1,7 @@
 # ---- Stage 1: Build ----
 # We compile the code inside Docker so anyone can build this project
 # without having Java or Maven installed on their machine.
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
 # Copy the Maven wrapper script and its config.
@@ -25,7 +25,7 @@ RUN ./mvnw package -DskipTests -q
 # Start from a clean image and copy only the compiled .jar from Stage 1.
 # This throws away Maven, the source code, and all downloaded dependencies —
 # the final image is small and does not expose your source code.
-FROM eclipse-temurin:25-jdk
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]

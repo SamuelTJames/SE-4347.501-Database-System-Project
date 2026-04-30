@@ -16,7 +16,6 @@ import java.util.Objects;
 @Table(name = "SEAT")
 public class Seat {
 
-    // Composite PK: a seat is uniquely identified by its number, the date, and the leg it belongs to.
     @Embeddable
     public static class SeatId implements Serializable {
 
@@ -26,14 +25,18 @@ public class Seat {
         @Column(name = "DATE", nullable = false)
         private LocalDate date;
 
+        @Column(name = "NUMBER", nullable = false)
+        private String flightNumber;
+
         @Column(name = "LEG_NO", nullable = false)
         private int legNo;
 
         public SeatId() {}
 
-        public SeatId(String seatNo, LocalDate date, int legNo) {
+        public SeatId(String seatNo, LocalDate date, String flightNumber, int legNo) {
             this.seatNo = seatNo;
             this.date = date;
+            this.flightNumber = flightNumber;
             this.legNo = legNo;
         }
 
@@ -43,6 +46,9 @@ public class Seat {
         public LocalDate getDate() { return date; }
         public void setDate(LocalDate date) { this.date = date; }
 
+        public String getFlightNumber() { return flightNumber; }
+        public void setFlightNumber(String flightNumber) { this.flightNumber = flightNumber; }
+
         public int getLegNo() { return legNo; }
         public void setLegNo(int legNo) { this.legNo = legNo; }
 
@@ -50,25 +56,25 @@ public class Seat {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof SeatId that)) return false;
-            return legNo == that.legNo && Objects.equals(seatNo, that.seatNo) && Objects.equals(date, that.date);
+            return legNo == that.legNo
+                    && Objects.equals(seatNo, that.seatNo)
+                    && Objects.equals(date, that.date)
+                    && Objects.equals(flightNumber, that.flightNumber);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(seatNo, date, legNo);
+            return Objects.hash(seatNo, date, flightNumber, legNo);
         }
     }
 
     @EmbeddedId
     private SeatId id;
 
-    // DATE and LEG_NO are already declared as PK columns in SeatId above.
-    // Because LegInstance itself has a composite PK, @MapsId cannot be used here.
-    // insertable=false, updatable=false tells JPA not to write these columns twice —
-    // they are managed by SeatId, this relationship is read-only for navigation only.
     @ManyToOne
     @JoinColumns({
         @JoinColumn(name = "DATE", referencedColumnName = "DATE", insertable = false, updatable = false),
+        @JoinColumn(name = "NUMBER", referencedColumnName = "NUMBER", insertable = false, updatable = false),
         @JoinColumn(name = "LEG_NO", referencedColumnName = "LEG_NO", insertable = false, updatable = false)
     })
     private LegInstance legInstance;

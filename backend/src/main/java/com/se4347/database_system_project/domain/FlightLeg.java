@@ -16,8 +16,6 @@ import java.util.Objects;
 @Table(name = "FLIGHT_LEG")
 public class FlightLeg {
 
-    // This table has no single unique column, so the PK is a combination of two columns.
-    // JPA requires a separate class to represent that composite key.
     @Embeddable
     public static class FlightLegId implements Serializable {
 
@@ -53,13 +51,9 @@ public class FlightLeg {
         }
     }
 
-    // Tells JPA to use the composite key class above as this entity's primary key.
     @EmbeddedId
     private FlightLegId id;
 
-    // NUMBER is both an FK to FLIGHT and part of the PK.
-    // @MapsId tells JPA to automatically fill id.flightNumber from this relationship,
-    // so you only need to set the Flight object — no need to set the PK field manually.
     @ManyToOne
     @MapsId("flightNumber")
     @JoinColumn(name = "NUMBER", nullable = false)
