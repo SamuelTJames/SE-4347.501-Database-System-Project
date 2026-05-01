@@ -30,12 +30,14 @@ The build uses **Java 21** (LTS) for portability across local toolchains and CI.
 
 ## Running
 
+> All commands below must be run from the project root directory (where `docker-compose.yml` is located).
+
 ```bash
 docker-compose run --rm --service-ports --build backend
 ```
 
 - This starts the database automatically, waits for it to be healthy, then launches the backend.
-- Compiles the project inside Docker on every run — first run takes a few minutes, subsequent runs are fast due to layer caching.
+- Compiles the project inside Docker on every run — **first build can take several minutes** while Maven downloads dependencies; subsequent builds are fast due to layer caching.
 - On first startup the app seeds sample data automatically (4 airports, 4 flights, leg instances, and a passenger).
 - The interactive CLI prompt appears after startup and data seeding complete.
 
