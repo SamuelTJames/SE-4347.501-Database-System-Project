@@ -31,11 +31,11 @@ The build uses **Java 21** (LTS) for portability across local toolchains and CI.
 ## Running
 
 ```bash
-docker-compose run --rm --service-ports backend
+docker-compose run --rm --service-ports --build backend
 ```
 
 - This starts the database automatically, waits for it to be healthy, then launches the backend.
-- First run compiles the project inside Docker — this takes a few minutes. Add `--build` to force a rebuild after code changes.
+- Compiles the project inside Docker on every run — first run takes a few minutes, subsequent runs are fast due to layer caching.
 - On first startup the app seeds sample data automatically (4 airports, 4 flights, leg instances, and a passenger).
 - The interactive CLI prompt appears after startup and data seeding complete.
 
@@ -138,9 +138,13 @@ AA1000 (leg 2) + AA2000 (leg 3) form a one-stop DFW → ATL → SFO connection, 
 
 ## Tests
 
+macOS / Linux:
+```bash
+cd backend && ./mvnw test
 ```
-cd backend
-./mvnw test
+Windows:
+```cmd
+cd backend && mvnw.cmd test
 ```
 
 Tests use an in-memory H2 database (PostgreSQL compatibility mode) so no Postgres is required.
