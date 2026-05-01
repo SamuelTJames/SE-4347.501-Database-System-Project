@@ -14,8 +14,18 @@ The build uses **Java 21** (LTS) for portability across local toolchains and CI.
 
 1. Clone the repository
 2. Copy the example env file and fill in your values:
-   ```
+
+   macOS / Linux:
+   ```bash
    cp .env.example .env
+   ```
+   Windows (Command Prompt):
+   ```cmd
+   copy .env.example .env
+   ```
+   Windows (PowerShell):
+   ```powershell
+   Copy-Item .env.example .env
    ```
 
 ## Running
