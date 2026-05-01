@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    # NON_KEYWORDS lets us reuse the production schema names DATE and NUMBER as identifiers
+    # in H2 (they are SQL reserved words but the existing PostgreSQL schema uses them).
+    url: jdbc:h2:mem:milestone2;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;NON_KEYWORDS=NUMBER,DATE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+management:
+  server:
+    port: -1
