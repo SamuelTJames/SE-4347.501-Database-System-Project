@@ -20,30 +20,111 @@ The build uses **Java 21** (LTS) for portability across local toolchains and CI.
 
 ## Running
 
-```
-docker-compose up --build
+```bash
+docker-compose run --rm --service-ports backend
 ```
 
-- First run downloads dependencies and compiles the project inside Docker — this takes a few minutes.
-- Subsequent runs are fast due to Docker layer caching.
-- The app is ready when you see `Started DatabaseSystemProjectApplication` in the logs.
+- This starts the database automatically, waits for it to be healthy, then launches the backend.
+- First run compiles the project inside Docker — this takes a few minutes. Add `--build` to force a rebuild after code changes.
+- On first startup the app seeds sample data automatically (4 airports, 4 flights, leg instances, and a passenger).
+- The interactive CLI prompt appears after startup and data seeding complete.
 
-| Service  | URL                                          |
-|----------|----------------------------------------------|
-| API      | http://localhost:8080                        |
-| API Docs | http://localhost:8080/swagger-ui/index.html  |
-| Health   | http://localhost:8081/actuator/health        |
+The REST API is available while the CLI is running:
+
+| Service  | URL                                         |
+|----------|---------------------------------------------|
+| API Docs | http://localhost:8080/swagger-ui/index.html |
+| Health   | http://localhost:8081/actuator/health       |
+
+## Interactive CLI
+
+The prompt appears automatically on startup:
+
+```
+Airline DB — Interactive CLI
+Type  help;  for available commands.  Type  exit;  to quit.
+
+prompt>
+```
+
+Type commands in `function(args);` style:
+
+```
+prompt> trip("DFW", "SFO");
+prompt> flight("AA3478");
+prompt> availability("AA3478", "2026-05-01");
+prompt> passenger(name="Jane Smith");
+prompt> passenger(phone="5551234567");
+prompt> utilization("2026-05-01", "2026-05-31");
+prompt> help;
+prompt> exit;
+```
+
+## Sample Data
+
+The following data is seeded automatically on first startup.
+
+**Airports**
+
+| Code | Name                    | City          | State |
+|------|-------------------------|---------------|-------|
+| DFW  | Dallas/Fort Worth Intl  | Dallas        | TX    |
+| SFO  | San Francisco Intl      | San Francisco | CA    |
+| ATL  | Hartsfield-Jackson      | Atlanta       | GA    |
+| JFK  | John F. Kennedy Intl    | New York      | NY    |
+
+**Airplane Type**
+
+| Type | Company | Max Seats |
+|------|---------|-----------|
+| B737 | Boeing  | 180       |
+
+**Airplanes**
+
+| Registration | Seats | Type |
+|--------------|-------|------|
+| N101AA       | 150   | B737 |
+| N102AA       | 160   | B737 |
+| N103AA       | 170   | B737 — idle, no flights assigned |
+
+**Flights & Legs**
+
+| Flight | Airline | Weekdays | Leg | From | To  | Dep   | Arr   |
+|--------|---------|----------|-----|------|-----|-------|-------|
+| AA3478 | AA      | Daily    | 1   | DFW  | SFO | 08:00 | 10:30 |
+| AA1000 | AA      | Daily    | 2   | DFW  | ATL | 09:00 | 12:00 |
+| AA2000 | AA      | Daily    | 3   | ATL  | SFO | 13:00 | 16:00 |
+| UA9999 | UA      | Mon–Fri  | 4   | SFO  | JFK | 07:00 | 15:00 |
+
+AA1000 (leg 2) + AA2000 (leg 3) form a one-stop DFW → ATL → SFO connection, discoverable via `trip("DFW", "SFO");`.
+
+**Fares**
+
+| Flight | Code | Amount  | Restriction |
+|--------|------|---------|-------------|
+| AA3478 | Y    | $250.00 |             |
+| AA3478 | F    | $550.00 | First class |
+
+**Scheduled Instances (2026-05-01)**
+
+| Flight | Leg | Date       | Airplane |
+|--------|-----|------------|----------|
+| AA3478 | 1   | 2026-05-01 | N101AA   |
+| AA1000 | 2   | 2026-05-01 | N102AA   |
+
+**Passengers**
+
+| Seat | Flight | Leg | Date       | Name       | Phone      |
+|------|--------|-----|------------|------------|------------|
+| 12A  | AA3478 | 1   | 2026-05-01 | Jane Smith | 5551234567 |
 
 ## Stopping
 
-```
-docker-compose down
-```
-
-To also delete the database volume:
-```
-docker-compose down -v
-```
+| Situation | Command |
+|-----------|---------|
+| Exit cleanly | `exit;` |
+| Force stop / frozen CLI | `Ctrl+C` |
+| Full reset (wipes seeded data) | `docker-compose down -v` |
 
 ## Tests
 
@@ -60,11 +141,11 @@ Tests use an in-memory H2 database (PostgreSQL compatibility mode) so no Postgre
 
 | # | Requirement | Endpoint | CLI | Tests |
 |---|---|---|---|---|
-| 1a | Direct + one-connection itinerary (lookup by city OR 3-letter code) | `GET /api/flights/trip?from=&to=` | `--cli trip <ORIGIN> <DEST>` | `ItineraryServiceTest` |
-| 1b | Flight details by flight number | `GET /api/flights/{number}` | `--cli flight <NUMBER>` | `FlightQueryServiceTest` |
-| 2  | Aircraft utilization report for date range | `GET /api/reports/aircraft-utilization?start=&end=` | `--cli utilization <START> <END>` | `AircraftUtilizationServiceTest` |
-| 3a | Seat availability for flight + date | `GET /api/bookings/availability?flight=&date=` | `--cli availability <NUMBER> <DATE>` | `BookingServiceTest#seatAvailability...` |
-| 3b | Passenger itinerary by name or phone | `GET /api/bookings/passenger?name=` (or `?phone=`) | `--cli passenger --name=` (or `--phone=`) | `BookingServiceTest#passenger...` |
+| 1a | Direct + one-connection itinerary (lookup by city OR 3-letter code) | `GET /api/flights/trip?from=<origin>&to=<destination>` | `trip("DFW", "SFO");` | `ItineraryServiceTest` |
+| 1b | Flight details by flight number | `GET /api/flights/<number>` | `flight("AA3478");` | `FlightQueryServiceTest` |
+| 2  | Aircraft utilization report for date range | `GET /api/reports/aircraft-utilization?start=<date>&end=<date>` | `utilization("2026-05-01", "2026-05-31");` | `AircraftUtilizationServiceTest` |
+| 3a | Seat availability for flight + date | `GET /api/bookings/availability?flight=<number>&date=<date>` | `availability("AA3478", "2026-05-01");` | `BookingServiceTest#seatAvailability...` |
+| 3b | Passenger itinerary by name or phone | `GET /api/bookings/passenger?name=<name>` (or `?phone=<phone>`) | `passenger(name="Jane Smith");` | `BookingServiceTest#passenger...` |
 
 ## REST examples
 
@@ -110,24 +191,9 @@ Sample response — `GET /api/flights/AA3478`:
 }
 ```
 
-## CLI mode
-
-The same logic is reachable from the command line via the `--cli` flag — the embedded
-web server still starts, so you can hit either interface in the same process:
-
-```bash
-# Inside the running container (or via java -jar app.jar)
-java -jar app.jar --cli flight AA3478
-java -jar app.jar --cli trip DFW SFO
-java -jar app.jar --cli availability AA3478 2026-05-01
-java -jar app.jar --cli passenger --name="Jane Smith"
-java -jar app.jar --cli passenger --phone=5551234567
-java -jar app.jar --cli utilization 2026-05-01 2026-05-31
-```
-
 ---
 
-## Schema assumptions (documented)
+## Schema assumptions
 
 To avoid ambiguous leg joins when different flights reuse the same leg number, this implementation
 stores flight number alongside leg number in runtime identifiers:
