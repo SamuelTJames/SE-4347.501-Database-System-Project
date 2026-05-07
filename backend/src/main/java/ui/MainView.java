@@ -91,7 +91,19 @@ public class MainView extends VerticalLayout {
         		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue() + "\n" + parameter3.getValue());
         	}
         	else if(funct.equals("From One Destination Flight Search")) {
-        		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue());
+        		if(parameter1.getValue() == "" || parameter2.getValue() == "")
+            	{
+            		info.setValue("Missing Information");
+            	}
+            	else
+            	{
+            		userInput.add(parameter1.getValue());
+                	userInput.add(parameter2.getValue());
+                	
+                	info.setValue(mvq.flightSearch(userInput));
+            	}
+            	
+            	userInput.clear();
         	}
         	else if(funct.equals("Infrastructure Report")) {
         		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue() + "\n" + parameter3.getValue());
@@ -112,10 +124,17 @@ public class MainView extends VerticalLayout {
         });
         
         checkSeatButton.addClickListener(event -> {
-        	userInput.add(seatParameter.getValue());
-        	userInput.add(seatParameter2.getValue());
-        	
-        	seatInfo.setValue(mvq.availability(userInput));
+        	if(seatParameter.getValue() == "" || seatParameter2.getValue() == "")
+        	{
+        		seatInfo.setValue("Missing Information");
+        	}
+        	else
+        	{
+        		userInput.add(seatParameter.getValue());
+            	userInput.add(seatParameter2.getValue());
+            	
+            	seatInfo.setValue(mvq.seatAvailability(userInput));
+        	}
         	
         	userInput.clear();
         });
