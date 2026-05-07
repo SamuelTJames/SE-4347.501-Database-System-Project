@@ -7,6 +7,7 @@ import com.se4347.database_system_project.api.dto.ItineraryResults;
 import com.se4347.database_system_project.api.dto.OneStopItinerary;
 import com.se4347.database_system_project.api.dto.PassengerItineraryEntry;
 import com.se4347.database_system_project.api.dto.SeatAvailability;
+import com.se4347.database_system_project.api.dto.FlightLegSummary;
 import com.se4347.database_system_project.service.AircraftUtilizationService;
 import com.se4347.database_system_project.service.BookingService;
 import com.se4347.database_system_project.service.FlightQueryService;
@@ -39,18 +40,40 @@ public class MVQueries
         this.aircraftUtilizationService = aircraftUtilizationService;
     }
     
-    public String availability(List<String> userInput)
+    //2b Flight deatils from flight number and date
+    public String flightSearch(List<String> userInput)
     {
     	String display;
     	
-    	List<SeatAvailability> output = bookingService.checkSeatAvailability(userInput.get(0), LocalDate.parse(userInput.get(1)));
+    	FlightDetails fd = flightQueryService.getFlightByNumber(userInput.get(0));
     	
-    	display = "Flight: " + 
-    				userInput.get(0) + 
-    				"\nSeats Remaining: " + 
-    				String.valueOf(output.get(0).remainingSeats()); 
+    	FlightLegSummary l = fd.legs().get(0);
+    	
+		display = "Airline: " +
+					fd.airline() +
+					"\nFlight: " +
+					userInput.get(0) +
+					"\nDate: " +
+					userInput.get(1) +
+					"\nDeparture: " +
+					String.valueOf(l.scheduledDepTime()) +
+					"\nArrival: " +
+					String.valueOf(l.scheduledArrTime());
     	
     	return display;
     }
     
+    
+    //4b Check Seat Availability from flight number and date
+    public String seatAvailability(List<String> userInput)
+    {
+    	String display;
+    	
+		List<SeatAvailability> sa = bookingService.checkSeatAvailability(userInput.get(0), LocalDate.parse(userInput.get(1)));
+		
+    	display = "Seats Remaining: " + 
+    				String.valueOf(sa.get(0).remainingSeats());
+    	
+    	return display;
+    }
 }
