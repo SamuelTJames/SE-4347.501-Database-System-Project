@@ -88,7 +88,24 @@ public class MainView extends VerticalLayout {
         	
         	if (funct == null) info.setValue("Set desired Function\n");
         	else if(funct.equals("From Two Destinations Flight Search")) /*function call*/{
-        		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue() + "\n" + parameter3.getValue());
+        		if(parameter1.getValue() == "" || parameter2.getValue() == "" || parameter3.getValue() == "")
+            	{
+            		info.setValue("Missing Information");
+            	}
+            	else
+            	{
+            		userInput.add(parameter1.getValue());
+                	userInput.add(parameter2.getValue());
+                	userInput.add(parameter3.getValue());
+                	
+                	
+                	
+                	List<String> results = mvq.airportFlightSearch(userInput);
+                	
+                	info.setValue(results.get(0).concat(results.get(1)));
+            	}
+            	
+            	userInput.clear();
         	}
         	else if(funct.equals("From One Destination Flight Search")) {
         		if(parameter1.getValue() == "" || parameter2.getValue() == "")
@@ -100,7 +117,7 @@ public class MainView extends VerticalLayout {
             		userInput.add(parameter1.getValue());
                 	userInput.add(parameter2.getValue());
                 	
-                	info.setValue(mvq.flightSearch(userInput));
+                	info.setValue(mvq.numFlightSearch(userInput));
             	}
             	
             	userInput.clear();
@@ -125,7 +142,14 @@ public class MainView extends VerticalLayout {
         		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue());
         	}
         	else if(funct.equals("Itinerary Retrieval")) {
-        		info.setValue(parameter1.getValue());
+        		if(parameter1.getValue() == "")
+            	{
+            		info.setValue("Missing Name");
+            	}
+            	else
+            	{
+                	info.setValue(mvq.passengerItineraryRetrieval(parameter1.getValue()));
+            	}
         	}
 
         	if(funct.equals("From One Destination Flight Search") || funct.equals("From Two Destinations Flight Search")) {

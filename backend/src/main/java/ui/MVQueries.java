@@ -40,8 +40,70 @@ public class MVQueries
         this.aircraftUtilizationService = aircraftUtilizationService;
     }
     
+    //2a Flight details from two airport codes and date
+     public List<String> airportFlightSearch(List<String> userInput)
+     {
+    	 List<String> display = new ArrayList<String>();
+    	 String directFlights = "******************\n*Direct Flights*\n******************\n",
+    			 oneStopFlights = "*********************\n*One Stop Fligths*\n*********************\n";
+    	 
+    	 ItineraryResults ir = itineraryService.findItineraries(userInput.get(0), userInput.get(1));
+    	 
+    	 //ADD FILTER USING GIVEN DATE
+    	 
+    	 for(DirectItinerary di : ir.direct())
+    	 {
+    		 directFlights = directFlights +
+								"Airline: " +
+								di.airline() +
+								"\nFlight: " +
+								di.flightNumber() +
+								"\nDate: " +
+								userInput.get(2) +
+								"\nDeparture: " +
+								String.valueOf(di.scheduledDepTime()) +
+								"\nArrival: " +
+								String.valueOf(di.scheduledArrTime())+
+    				 			"\n---------------------------------------------------------\n";
+    	 }
+    	 
+    	 for(OneStopItinerary osi : ir.oneStop())
+    	 {
+    		 DirectItinerary flightOne = osi.firstLeg();
+    		 DirectItinerary flightTwo = osi.secondLeg();
+    		 
+    		 oneStopFlights = oneStopFlights +
+								"Flight 1 Airline: " +
+								flightOne.airline() +
+								"\nFlight: " +
+								flightOne.flightNumber() +
+								"\nDate: " +
+								userInput.get(2) +
+								"\nDeparture: " +
+								String.valueOf(flightOne.scheduledDepTime()) +
+								"\nArrival: " +
+								String.valueOf(flightOne.scheduledArrTime())+
+								"\n\nFlight 2 Airline: " +
+								flightTwo.airline() +
+								"\nFlight: " +
+								flightTwo.flightNumber() +
+								"\nDate: " +
+								userInput.get(2) +
+								"\nDeparture: " +
+								String.valueOf(flightTwo.scheduledDepTime()) +
+								"\nArrival: " +
+								String.valueOf(flightTwo.scheduledArrTime())+
+					 			"\n---------------------------------------------------------\n";
+    	 }
+    	
+    	 display.add(directFlights);
+    	 display.add(oneStopFlights);
+    	 
+    	 return display;
+     }
+    
     //2b Flight deatils from flight number and date
-    public String flightSearch(List<String> userInput)
+    public String numFlightSearch(List<String> userInput)
     {
     	String display;
     	
@@ -111,5 +173,34 @@ public class MVQueries
     				String.valueOf(sa.get(0).remainingSeats());
     	
     	return display;
+    }
+    
+    //4d Passenger Itinerary Retrieval
+    public String passengerItineraryRetrieval(String userInput)
+    {
+    	String display = "";
+    	
+    	 List<PassengerItineraryEntry> pasItiEntry = bookingService.getPassengerItinerary(userInput, null);
+    	 
+    	 
+    	 for(PassengerItineraryEntry pie : pasItiEntry)
+     	{
+    		 display = 	display +
+    				 	"Leg: " +
+			 			String.valueOf(pie.legNo()) +
+			 			"\nStart: " +
+			 			pie.depAirportCode() +
+			 			"\nEnd: " +
+			 			pie.arrAirportCode() +
+			 			"\nDeparture: " +
+			 			String.valueOf(pie.scheduledDepTime()) +
+			 			"\nArrival: " +
+			 			String.valueOf(pie.scheduledArrTime()) +
+			 			"\nSeat Number: " +
+			 			pie.seatNumber() +
+			 			"\n-----------------------------------------------------------\n";
+     	}
+    	 
+    	 return display;
     }
 }
