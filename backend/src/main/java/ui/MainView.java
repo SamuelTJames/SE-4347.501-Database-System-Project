@@ -106,7 +106,20 @@ public class MainView extends VerticalLayout {
             	userInput.clear();
         	}
         	else if(funct.equals("Infrastructure Report")) {
-        		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue() + "\n" + parameter3.getValue());
+        		if(parameter1.getValue() == "" || parameter2.getValue() == "" || parameter3.getValue() == "")
+            	{
+            		info.setValue("Missing Information");
+            	}
+            	else
+            	{
+            		userInput.add(parameter1.getValue());
+                	userInput.add(parameter2.getValue());
+                	userInput.add(parameter3.getValue());
+                	
+                	info.setValue(mvq.aircraftUtilizationReport(userInput));
+            	}
+            	
+            	userInput.clear();
         	}
         	else if(funct.equals("Book a Seat")) {
         		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue());

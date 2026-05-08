@@ -63,6 +63,42 @@ public class MVQueries
     	return display;
     }
     
+    //3a Aircraft Utilization Report from airplane registration number and time period (2 dates)
+    public String aircraftUtilizationReport(List<String> userInput)
+    {
+    	String display;
+    	
+    	int index = 0, count = 0;
+    	
+    	List<AircraftUtilization> airUtiList = aircraftUtilizationService.getUtilizationReport(
+                LocalDate.parse(userInput.get(1)), LocalDate.parse(userInput.get(2)));
+    	
+    	for(AircraftUtilization a : airUtiList)
+    	{
+    		if(a.airplaneId().equals(userInput.get(0)))
+    		{
+    			index = count;
+    			break;
+    		}
+    		else
+    		{
+    			count++;
+    		}
+    	}
+    	
+    	AircraftUtilization au = airUtiList.get(index);
+    	
+    	display = "Airplane: " +
+    				
+    				"\nType: " +
+    				au.airplaneType() +
+    				"\nRegistration Number: " +
+    				userInput.get(0) +
+    				"\nNumber of Flights: " +
+    				String.valueOf(au.totalFlights());
+    	
+    	return display;
+    }
     
     //4b Check Seat Availability from flight number and date
     public String seatAvailability(List<String> userInput)
