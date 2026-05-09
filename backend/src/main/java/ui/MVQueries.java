@@ -12,6 +12,8 @@ import com.se4347.database_system_project.service.AircraftUtilizationService;
 import com.se4347.database_system_project.service.BookingService;
 import com.se4347.database_system_project.service.FlightQueryService;
 import com.se4347.database_system_project.service.ItineraryService;
+import com.se4347.database_system_project.exception.InvalidInputException;
+import com.se4347.database_system_project.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -47,59 +49,67 @@ public class MVQueries
     	 String directFlights = "******************\n*Direct Flights*\n******************\n",
     			 oneStopFlights = "*********************\n*One Stop Fligths*\n*********************\n";
     	 
-    	 ItineraryResults ir = itineraryService.findItineraries(userInput.get(0), userInput.get(1));
-    	 
-    	 //ADD FILTER USING GIVEN DATE
-    	 
-    	 for(DirectItinerary di : ir.direct())
+    	 try
     	 {
-    		 directFlights = directFlights +
-								"Airline: " +
-								di.airline() +
-								"\nFlight: " +
-								di.flightNumber() +
-								"\nDate: " +
-								userInput.get(2) +
-								"\nDeparture: " +
-								String.valueOf(di.scheduledDepTime()) +
-								"\nArrival: " +
-								String.valueOf(di.scheduledArrTime())+
-    				 			"\n---------------------------------------------------------\n";
-    	 }
+	    	 ItineraryResults ir = itineraryService.findItineraries(userInput.get(0), userInput.get(1));
+	    	 
+	    	 //ADD FILTER USING GIVEN DATE
+	    	 
+	    	 for(DirectItinerary di : ir.direct())
+	    	 {
+	    		 directFlights = directFlights +
+									"Airline: " +
+									di.airline() +
+									"\nFlight: " +
+									di.flightNumber() +
+									"\nDate: " +
+									userInput.get(2) +
+									"\nDeparture: " +
+									String.valueOf(di.scheduledDepTime()) +
+									"\nArrival: " +
+									String.valueOf(di.scheduledArrTime())+
+	    				 			"\n---------------------------------------------------------\n";
+	    	 }
+	    	 
+	    	 for(OneStopItinerary osi : ir.oneStop())
+	    	 {
+	    		 DirectItinerary flightOne = osi.firstLeg();
+	    		 DirectItinerary flightTwo = osi.secondLeg();
+	    		 
+	    		 oneStopFlights = oneStopFlights +
+									"Flight 1 Airline: " +
+									flightOne.airline() +
+									"\nFlight: " +
+									flightOne.flightNumber() +
+									"\nDate: " +
+									userInput.get(2) +
+									"\nDeparture: " +
+									String.valueOf(flightOne.scheduledDepTime()) +
+									"\nArrival: " +
+									String.valueOf(flightOne.scheduledArrTime())+
+									"\n\nFlight 2 Airline: " +
+									flightTwo.airline() +
+									"\nFlight: " +
+									flightTwo.flightNumber() +
+									"\nDate: " +
+									userInput.get(2) +
+									"\nDeparture: " +
+									String.valueOf(flightTwo.scheduledDepTime()) +
+									"\nArrival: " +
+									String.valueOf(flightTwo.scheduledArrTime())+
+						 			"\n---------------------------------------------------------\n";
+	    	}
+	    		
+			 display.add(directFlights);
+			 display.add(oneStopFlights);
+    	}
+		catch(NotFoundException | InvalidInputException e)
+		{
+			display.add("Error: ");
+			display.add(e.getMessage());
+		}
     	 
-    	 for(OneStopItinerary osi : ir.oneStop())
-    	 {
-    		 DirectItinerary flightOne = osi.firstLeg();
-    		 DirectItinerary flightTwo = osi.secondLeg();
-    		 
-    		 oneStopFlights = oneStopFlights +
-								"Flight 1 Airline: " +
-								flightOne.airline() +
-								"\nFlight: " +
-								flightOne.flightNumber() +
-								"\nDate: " +
-								userInput.get(2) +
-								"\nDeparture: " +
-								String.valueOf(flightOne.scheduledDepTime()) +
-								"\nArrival: " +
-								String.valueOf(flightOne.scheduledArrTime())+
-								"\n\nFlight 2 Airline: " +
-								flightTwo.airline() +
-								"\nFlight: " +
-								flightTwo.flightNumber() +
-								"\nDate: " +
-								userInput.get(2) +
-								"\nDeparture: " +
-								String.valueOf(flightTwo.scheduledDepTime()) +
-								"\nArrival: " +
-								String.valueOf(flightTwo.scheduledArrTime())+
-					 			"\n---------------------------------------------------------\n";
-    	 }
-    	
-    	 display.add(directFlights);
-    	 display.add(oneStopFlights);
-    	 
-    	 return display;
+    	return display;
      }
     
     //2b Flight deatils from flight number and date
@@ -107,20 +117,27 @@ public class MVQueries
     {
     	String display;
     	
-    	FlightDetails fd = flightQueryService.getFlightByNumber(userInput.get(0));
-    	
-    	FlightLegSummary l = fd.legs().get(0);
-    	
-		display = "Airline: " +
-					fd.airline() +
-					"\nFlight: " +
-					userInput.get(0) +
-					"\nDate: " +
-					userInput.get(1) +
-					"\nDeparture: " +
-					String.valueOf(l.scheduledDepTime()) +
-					"\nArrival: " +
-					String.valueOf(l.scheduledArrTime());
+    	try
+    	{
+	    	FlightDetails fd = flightQueryService.getFlightByNumber(userInput.get(0));
+	    	
+	    	FlightLegSummary l = fd.legs().get(0);
+	    	
+			display = "Airline: " +
+						fd.airline() +
+						"\nFlight: " +
+						userInput.get(0) +
+						"\nDate: " +
+						userInput.get(1) +
+						"\nDeparture: " +
+						String.valueOf(l.scheduledDepTime()) +
+						"\nArrival: " +
+						String.valueOf(l.scheduledArrTime());
+    	}
+    	catch(NotFoundException | InvalidInputException e)
+    	{
+    		display = "Error: " + e.getMessage();
+    	}
     	
     	return display;
     }
@@ -132,32 +149,39 @@ public class MVQueries
     	
     	int index = 0, count = 0;
     	
-    	List<AircraftUtilization> airUtiList = aircraftUtilizationService.getUtilizationReport(
-                LocalDate.parse(userInput.get(1)), LocalDate.parse(userInput.get(2)));
-    	
-    	for(AircraftUtilization a : airUtiList)
+    	try
     	{
-    		if(a.airplaneId().equals(userInput.get(0)))
-    		{
-    			index = count;
-    			break;
-    		}
-    		else
-    		{
-    			count++;
-    		}
+	    	List<AircraftUtilization> airUtiList = aircraftUtilizationService.getUtilizationReport(
+	                LocalDate.parse(userInput.get(1)), LocalDate.parse(userInput.get(2)));
+	    	
+	    	for(AircraftUtilization a : airUtiList)
+	    	{
+	    		if(a.airplaneId().equals(userInput.get(0)))
+	    		{
+	    			index = count;
+	    			break;
+	    		}
+	    		else
+	    		{
+	    			count++;
+	    		}
+	    	}
+	    	
+	    	AircraftUtilization au = airUtiList.get(index);
+	    	
+	    	display = "Airplane: " +
+	    				
+	    				"\nType: " +
+	    				au.airplaneType() +
+	    				"\nRegistration Number: " +
+	    				userInput.get(0) +
+	    				"\nNumber of Flights: " +
+	    				String.valueOf(au.totalFlights());
     	}
-    	
-    	AircraftUtilization au = airUtiList.get(index);
-    	
-    	display = "Airplane: " +
-    				
-    				"\nType: " +
-    				au.airplaneType() +
-    				"\nRegistration Number: " +
-    				userInput.get(0) +
-    				"\nNumber of Flights: " +
-    				String.valueOf(au.totalFlights());
+    	catch(DateTimeParseException | InvalidInputException e)
+    	{
+    		display = "Error: " + e.getMessage();
+    	}
     	
     	return display;
     }
@@ -167,10 +191,17 @@ public class MVQueries
     {
     	String display;
     	
+    	try
+    	{
 		List<SeatAvailability> sa = bookingService.checkSeatAvailability(userInput.get(0), LocalDate.parse(userInput.get(1)));
 		
     	display = "Seats Remaining: " + 
     				String.valueOf(sa.get(0).remainingSeats());
+    	}
+    	catch(NotFoundException | InvalidInputException e)
+    	{
+    		display = "Error: " + e.getMessage();
+    	}
     	
     	return display;
     }
@@ -180,27 +211,34 @@ public class MVQueries
     {
     	String display = "";
     	
-    	 List<PassengerItineraryEntry> pasItiEntry = bookingService.getPassengerItinerary(userInput, null);
-    	 
-    	 
-    	 for(PassengerItineraryEntry pie : pasItiEntry)
+    	try
+    	{
+	    	List<PassengerItineraryEntry> pasItiEntry = bookingService.getPassengerItinerary(userInput, null);
+	    	 
+	    	 
+	    	for(PassengerItineraryEntry pie : pasItiEntry)
+	     	{
+	    		 display = 	display +
+	    				 	"Leg: " +
+				 			String.valueOf(pie.legNo()) +
+				 			"\nStart: " +
+				 			pie.depAirportCode() +
+				 			"\nEnd: " +
+				 			pie.arrAirportCode() +
+				 			"\nDeparture: " +
+				 			String.valueOf(pie.scheduledDepTime()) +
+				 			"\nArrival: " +
+				 			String.valueOf(pie.scheduledArrTime()) +
+				 			"\nSeat Number: " +
+				 			pie.seatNumber() +
+				 			"\n-----------------------------------------------------------\n";
+	     	}
+    	}
+    	catch(NotFoundException | InvalidInputException e)
      	{
-    		 display = 	display +
-    				 	"Leg: " +
-			 			String.valueOf(pie.legNo()) +
-			 			"\nStart: " +
-			 			pie.depAirportCode() +
-			 			"\nEnd: " +
-			 			pie.arrAirportCode() +
-			 			"\nDeparture: " +
-			 			String.valueOf(pie.scheduledDepTime()) +
-			 			"\nArrival: " +
-			 			String.valueOf(pie.scheduledArrTime()) +
-			 			"\nSeat Number: " +
-			 			pie.seatNumber() +
-			 			"\n-----------------------------------------------------------\n";
+     		display = "Error: " + e.getMessage();
      	}
-    	 
-    	 return display;
+    	
+    	return display;
     }
 }
