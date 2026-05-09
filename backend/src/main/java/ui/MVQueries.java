@@ -14,6 +14,7 @@ import com.se4347.database_system_project.service.FlightQueryService;
 import com.se4347.database_system_project.service.ItineraryService;
 import com.se4347.database_system_project.exception.InvalidInputException;
 import com.se4347.database_system_project.exception.NotFoundException;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -211,10 +212,18 @@ public class MVQueries
     {
     	String display = "";
     	
+    	List<PassengerItineraryEntry> pasItiEntry;
+    	
     	try
     	{
-	    	List<PassengerItineraryEntry> pasItiEntry = bookingService.getPassengerItinerary(userInput, null);
-	    	 
+    		if(userInput.charAt(0) >= 48 && userInput.charAt(0) <= 57)
+    		{
+    			pasItiEntry = bookingService.getPassengerItinerary(null, userInput);
+    		}
+    		else
+    		{
+    			pasItiEntry = bookingService.getPassengerItinerary(userInput, null);
+    		}
 	    	 
 	    	for(PassengerItineraryEntry pie : pasItiEntry)
 	     	{
