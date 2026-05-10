@@ -68,6 +68,7 @@ prompt> availability("AA3478", "2026-05-01");
 prompt> passenger(name="Jane Smith");
 prompt> passenger(phone="5551234567");
 prompt> utilization("2026-05-01", "2026-05-31");
+prompt> book(flight="AA3478", date="2026-05-01", leg=1, seat="14B", name="John Doe", phone="5559876543");
 prompt> help;
 prompt> exit;
 ```
@@ -153,7 +154,7 @@ Tests use an in-memory H2 database (PostgreSQL compatibility mode) so no Postgre
 
 ---
 
-## Milestone 2 — Feature Checklist
+## Milestone 3 — Feature Checklist
 
 | # | Requirement | Endpoint | CLI | Tests |
 |---|---|---|---|---|
@@ -162,8 +163,11 @@ Tests use an in-memory H2 database (PostgreSQL compatibility mode) so no Postgre
 | 2  | Aircraft utilization report for date range | `GET /api/reports/aircraft-utilization?start=<date>&end=<date>` | `utilization("2026-05-01", "2026-05-31");` | `AircraftUtilizationServiceTest` |
 | 3a | Seat availability for flight + date | `GET /api/bookings/availability?flight=<number>&date=<date>` | `availability("AA3478", "2026-05-01");` | `BookingServiceTest#seatAvailability...` |
 | 3b | Passenger itinerary by name or phone | `GET /api/bookings/passenger?name=<name>` (or `?phone=<phone>`) | `passenger(name="Jane Smith");` | `BookingServiceTest#passenger...` |
+| 4  | Book a seat — reserve a seat on a scheduled flight leg | `POST /api/bookings/book` | `book(flight=..., date=..., leg=..., seat=..., name=..., phone=...);` | `BookingServiceTest#bookSeat...` |
 
 ## REST examples
+
+### GET endpoints
 
 ```bash
 # Flight details
@@ -206,6 +210,17 @@ Sample response — `GET /api/flights/AA3478`:
   ]
 }
 ```
+
+### POST endpoints
+
+| Endpoint | Field | Type | Notes |
+|---|---|---|---|
+| `POST /api/bookings/book` | `flightNumber` | string | e.g. `AA3478` |
+| | `date` | string | ISO date `YYYY-MM-DD` |
+| | `legNo` | integer | leg number on the flight |
+| | `seatNo` | string | row (1–99) + column (A–F), e.g. `14B` |
+| | `customerName` | string | max 30 characters |
+| | `customerPhone` | string | max 15 characters |
 
 ---
 
