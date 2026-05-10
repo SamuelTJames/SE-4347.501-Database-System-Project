@@ -37,6 +37,8 @@ public class MainView extends VerticalLayout {
         TextField parameter1 = new TextField();
         TextField parameter2 = new TextField();
         TextField parameter3 = new TextField();
+        TextField parameter4 = new TextField();
+        TextField parameter5 = new TextField();
         TextField seatParameter = new TextField();
         TextField seatParameter2 = new TextField();
         
@@ -58,6 +60,8 @@ public class MainView extends VerticalLayout {
         //parameter1.setVisible(false);
         parameter2.setVisible(false);
         parameter3.setVisible(false);
+        parameter4.setVisible(false);
+        parameter5.setVisible(false);
         seatParameter.setVisible(false);
         seatParameter2.setVisible(false);
         checkSeatButton.setVisible(false);
@@ -71,13 +75,22 @@ public class MainView extends VerticalLayout {
             seatInfo.setVisible(false);
             parameter2.setVisible(false);
             parameter3.setVisible(false);
+            parameter4.setVisible(false);
+            parameter5.setVisible(false);
             
         	String value = event.getValue();
-        	if(value.equals("From One Destination Flight Search") || value.equals("Book a Seat"))
+        	if(value.equals("From One Destination Flight Search"))
         		parameter2.setVisible(true);
-        	else if(!value.equals("Itinerary Retrieval")) {
+        	else if(value.equals("From Two Destinations Flight Search") || value.equals("Infrastructure Report")) {
         		parameter2.setVisible(true);
         		parameter3.setVisible(true);
+        	}
+        	else if(value.equals("Book a Seat")) 
+        	{
+        		parameter2.setVisible(true);
+        		parameter3.setVisible(true);
+        		parameter4.setVisible(true);
+        		parameter5.setVisible(true);
         	}
         });
         
@@ -116,7 +129,15 @@ public class MainView extends VerticalLayout {
             	userInput.clear();
         	}
         	else if(funct.equals("Book a Seat")) {
-        		info.setValue(parameter1.getValue() + "\n" + parameter2.getValue());
+        		userInput.add(parameter1.getValue());
+            	userInput.add(parameter2.getValue());
+            	userInput.add(parameter3.getValue());
+            	userInput.add(parameter4.getValue());
+            	userInput.add(parameter5.getValue());
+            	
+        		info.setValue(mvq.bookASeat(userInput));
+        		
+        		userInput.clear();
         	}
         	else if(funct.equals("Itinerary Retrieval")) {
                 info.setValue(mvq.passengerItineraryRetrieval(parameter1.getValue()));
@@ -154,7 +175,7 @@ public class MainView extends VerticalLayout {
         			functSelect, goButton
         			),
         	new HorizontalLayout(
-        			parameter1, parameter2, parameter3
+        			parameter1, parameter2, parameter3, parameter4, parameter5
         			),
         	info, 
         	new HorizontalLayout(

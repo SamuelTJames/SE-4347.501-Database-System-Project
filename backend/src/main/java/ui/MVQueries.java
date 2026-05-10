@@ -8,6 +8,7 @@ import com.se4347.database_system_project.api.dto.OneStopItinerary;
 import com.se4347.database_system_project.api.dto.PassengerItineraryEntry;
 import com.se4347.database_system_project.api.dto.SeatAvailability;
 import com.se4347.database_system_project.api.dto.FlightLegSummary;
+import com.se4347.database_system_project.api.dto.BookingConfirmation;
 import com.se4347.database_system_project.service.AircraftUtilizationService;
 import com.se4347.database_system_project.service.BookingService;
 import com.se4347.database_system_project.service.FlightQueryService;
@@ -129,7 +130,7 @@ public class MVQueries
 						"\nFlight: " +
 						userInput.get(0) +
 						"\nDate: " +
-						userInput.get(1) +
+						userInput.get(1) +		//Change date design later
 						"\nDeparture: " +
 						String.valueOf(l.scheduledDepTime()) +
 						"\nArrival: " +
@@ -171,7 +172,7 @@ public class MVQueries
 	    	AircraftUtilization au = airUtiList.get(index);
 	    	
 	    	display = "Airplane: " +
-	    				
+	    				//Add Airplane name output here
 	    				"\nType: " +
 	    				au.airplaneType() +
 	    				"\nRegistration Number: " +
@@ -204,6 +205,32 @@ public class MVQueries
     		display = "Error: " + e.getMessage();
     	}
     	
+    	return display;
+    }
+    
+    //4c Book a Seat with flight number, date, seat id, name, and phone number
+    public String bookASeat(List<String> userInput)
+    {
+    	String display = "Seat Booked";
+    		
+    	try
+    	{
+    		FlightDetails fd = flightQueryService.getFlightByNumber(userInput.get(0));
+        	
+        	FlightLegSummary l = fd.legs().get(0);
+    		
+    		bookingService.bookSeat(userInput.get(0),					//Flight number
+    								LocalDate.parse(userInput.get(1)),	//LocalDate (Change later?)
+    								l.legNo(),							//Leg number
+    								userInput.get(2),					//Seat
+    								userInput.get(3),					//Name
+    								userInput.get(4));					//Phone number
+    	}
+    	catch(NotFoundException | InvalidInputException | DateTimeParseException e)
+    	{
+    		display = "Error: " + e.getMessage();
+    	}
+    
     	return display;
     }
     
