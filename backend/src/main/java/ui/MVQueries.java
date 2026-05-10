@@ -9,6 +9,7 @@ import com.se4347.database_system_project.api.dto.PassengerItineraryEntry;
 import com.se4347.database_system_project.api.dto.SeatAvailability;
 import com.se4347.database_system_project.api.dto.FlightLegSummary;
 import com.se4347.database_system_project.api.dto.BookingConfirmation;
+import com.se4347.database_system_project.dao.jpa.LegInstanceRepository;
 import com.se4347.database_system_project.service.AircraftUtilizationService;
 import com.se4347.database_system_project.service.BookingService;
 import com.se4347.database_system_project.service.FlightQueryService;
@@ -19,7 +20,9 @@ import com.se4347.database_system_project.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,16 +35,19 @@ public class MVQueries
     private final ItineraryService itineraryService;
     private final BookingService bookingService;
     private final AircraftUtilizationService aircraftUtilizationService;
+    private final LegInstanceRepository legInstanceRepository;
 
     public MVQueries(FlightQueryService flightQueryService,
 	                   ItineraryService itineraryService,
 	                   BookingService bookingService,
-	                   AircraftUtilizationService aircraftUtilizationService) 
+	                   AircraftUtilizationService aircraftUtilizationService,
+	                   LegInstanceRepository legInstanceRepository) 
     {
         this.flightQueryService = flightQueryService;
         this.itineraryService = itineraryService;
         this.bookingService = bookingService;
         this.aircraftUtilizationService = aircraftUtilizationService;
+        this.legInstanceRepository = legInstanceRepository;
     }
     
     //2a Flight details from two airport codes and date
@@ -55,51 +61,55 @@ public class MVQueries
     	 {
 	    	 ItineraryResults ir = itineraryService.findItineraries(userInput.get(0), userInput.get(1));
 	    	 
-	    	 //ADD FILTER USING GIVEN DATE
-	    	 
+	    	 LocalDate userDate = LocalDate.parse(userInput.get(2));
 	    	 for(DirectItinerary di : ir.direct())
 	    	 {
-	    		 directFlights = directFlights +
-									"Airline: " +
-									di.airline() +
-									"\nFlight: " +
-									di.flightNumber() +
-									"\nDate: " +
-									userInput.get(2) +
-									"\nDeparture: " +
-									String.valueOf(di.scheduledDepTime()) +
-									"\nArrival: " +
-									String.valueOf(di.scheduledArrTime())+
-	    				 			"\n---------------------------------------------------------\n";
+	    		 List<LocalDate> possDates = legInstanceRepository.findDatesByFlightNumber(di.flightNumber());
+	    		 for(LocalDate i : possDates)
+	    			 if(i.equals(userDate))
+	    			 	directFlights = directFlights +
+										"Airline: " +
+										di.airline() +
+										"\nFlight: " +
+										di.flightNumber() +
+										"\nDate: " +
+										userInput.get(2) +
+										"\nDeparture: " +
+										String.valueOf(di.scheduledDepTime()) +
+										"\nArrival: " +
+										String.valueOf(di.scheduledArrTime())+
+										"\n---------------------------------------------------------\n";
 	    	 }
 	    	 
 	    	 for(OneStopItinerary osi : ir.oneStop())
 	    	 {
 	    		 DirectItinerary flightOne = osi.firstLeg();
 	    		 DirectItinerary flightTwo = osi.secondLeg();
-	    		 
-	    		 oneStopFlights = oneStopFlights +
-									"Flight 1 Airline: " +
-									flightOne.airline() +
-									"\nFlight: " +
-									flightOne.flightNumber() +
-									"\nDate: " +
-									userInput.get(2) +
-									"\nDeparture: " +
-									String.valueOf(flightOne.scheduledDepTime()) +
-									"\nArrival: " +
-									String.valueOf(flightOne.scheduledArrTime())+
-									"\n\nFlight 2 Airline: " +
-									flightTwo.airline() +
-									"\nFlight: " +
-									flightTwo.flightNumber() +
-									"\nDate: " +
-									userInput.get(2) +
-									"\nDeparture: " +
-									String.valueOf(flightTwo.scheduledDepTime()) +
-									"\nArrival: " +
-									String.valueOf(flightTwo.scheduledArrTime())+
-						 			"\n---------------------------------------------------------\n";
+	    		 List<LocalDate> possDates = legInstanceRepository.findDatesByFlightNumber(flightOne.flightNumber());
+	    		 for(LocalDate i : possDates)
+	    		 	if(((int) Math.abs(Duration.between(flightOne.scheduledDepTime(), flightTwo.scheduledDepTime()).toMinutes())) >= 60 && i.equals(userDate))
+	    			 	oneStopFlights = oneStopFlights +
+										"Flight 1 Airline: " +
+										flightOne.airline() +
+										"\nFlight: " +
+										flightOne.flightNumber() +
+										"\nDate: " +
+										userInput.get(2) +
+										"\nDeparture: " +
+										String.valueOf(flightOne.scheduledDepTime()) +
+										"\nArrival: " +
+										String.valueOf(flightOne.scheduledArrTime())+
+										"\n\nFlight 2 Airline: " +
+										flightTwo.airline() +
+										"\nFlight: " +
+										flightTwo.flightNumber() +
+										"\nDate: " +
+										userInput.get(2) +
+										"\nDeparture: " +
+										String.valueOf(flightTwo.scheduledDepTime()) +
+										"\nArrival: " +
+										String.valueOf(flightTwo.scheduledArrTime())+
+										"\n---------------------------------------------------------\n";
 	    	}
 	    		
 			 display.add(directFlights);
@@ -117,24 +127,29 @@ public class MVQueries
     //2b Flight deatils from flight number and date
     public String numFlightSearch(List<String> userInput)
     {
-    	String display;
+    	String display = "Error: Flight with given date not found";
     	
     	try
     	{
 	    	FlightDetails fd = flightQueryService.getFlightByNumber(userInput.get(0));
+	    	List<LocalDate> possDates = legInstanceRepository.findDatesByFlightNumber(userInput.get(0));
 	    	
 	    	FlightLegSummary l = fd.legs().get(0);
-	    	
-			display = "Airline: " +
-						fd.airline() +
-						"\nFlight: " +
-						userInput.get(0) +
-						"\nDate: " +
-						userInput.get(1) +		//Change date design later
-						"\nDeparture: " +
-						String.valueOf(l.scheduledDepTime()) +
-						"\nArrival: " +
-						String.valueOf(l.scheduledArrTime());
+	    	LocalDate userDate = LocalDate.parse(userInput.get(1));
+	    	for(LocalDate i : possDates)
+	    		if(i.equals(userDate)) {
+	    			display = "Airline: " +
+	    					  fd.airline() +
+	    					  "\nFlight: " +
+	    					  userInput.get(0) +
+	    					  "\nDate: " +
+	    					  userInput.get(1) +		//Change date design later
+	    					  "\nDeparture: " +
+	    					  String.valueOf(l.scheduledDepTime()) +
+	    					  "\nArrival: " +
+	    					  String.valueOf(l.scheduledArrTime());
+	    			break;
+	    		}
     	}
     	catch(NotFoundException | InvalidInputException e)
     	{
@@ -171,7 +186,7 @@ public class MVQueries
 	    	
 	    	AircraftUtilization au = airUtiList.get(index);
 	    	
-	    	display = "Airplane: " +
+	    	display =   //"Airplane: " +
 	    				//Add Airplane name output here
 	    				"\nType: " +
 	    				au.airplaneType() +

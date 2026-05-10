@@ -24,4 +24,12 @@ public interface LegInstanceRepository extends JpaRepository<LegInstance, LegIns
             """)
     List<LegInstance> findInstancesForFlight(@Param("flightNumber") String flightNumber,
                                              @Param("date") LocalDate date);
+    
+    @Query("""
+    	    SELECT li.id.date
+    	    FROM LegInstance li
+    	    WHERE li.id.flightNumber = :flightNumber
+    	""")
+    	List<LocalDate> findDatesByFlightNumber(
+    	        @Param("flightNumber") String flightNumber);
 }
