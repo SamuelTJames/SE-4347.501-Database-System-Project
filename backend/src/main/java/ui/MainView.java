@@ -1,7 +1,5 @@
 package com.se4347.database_system_project.ui;
 
-import com.se4347.database_system_project.cli.Milestone2CommandLineRunner;
-
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
