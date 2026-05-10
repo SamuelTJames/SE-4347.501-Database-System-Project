@@ -1,6 +1,7 @@
 package com.se4347.database_system_project.cli;
 
 import com.se4347.database_system_project.api.dto.AircraftUtilization;
+import com.se4347.database_system_project.api.dto.BookingConfirmation;
 import com.se4347.database_system_project.api.dto.DirectItinerary;
 import com.se4347.database_system_project.api.dto.FlightDetails;
 import com.se4347.database_system_project.api.dto.ItineraryResults;
@@ -66,7 +67,7 @@ public class Milestone2CommandLineRunner implements ApplicationRunner {
                             .build())
                     .completer(new StringsCompleter(
                             "flight(", "trip(", "availability(", "passenger(",
-                            "utilization(", "help;", "exit;"))
+                            "utilization(", "book(", "help;", "exit;"))
                     .build();
             printBanner();
             while (true) {
@@ -103,6 +104,7 @@ public class Milestone2CommandLineRunner implements ApplicationRunner {
                     case "availability" -> runAvailability(positional);
                     case "passenger"    -> runPassenger(named);
                     case "utilization"  -> runUtilization(positional);
+                    case "book"         -> runBook(named);
                     default -> System.out.println("Unknown command: " + command + ". Type help;");
                 }
             } catch (NotFoundException | InvalidInputException ex) {
@@ -225,6 +227,28 @@ public class Milestone2CommandLineRunner implements ApplicationRunner {
         printTable(new String[]{"AIRPLANE", "TYPE", "FLIGHTS"}, tableRows);
     }
 
+    private void runBook(Map<String, String> named) {
+        String flight  = named.get("flight");
+        String dateStr = named.get("date");
+        String legStr  = named.get("leg");
+        String seatNo  = named.get("seat");
+        String name    = named.get("name");
+        String phone   = named.get("phone");
+        if (flight == null || dateStr == null || legStr == null
+                || seatNo == null || name == null || phone == null) {
+            System.out.println("Usage: book(flight=\"AA3478\", date=\"2026-05-01\", leg=1, seat=\"14B\", name=\"John Doe\", phone=\"5559876543\");");
+            return;
+        }
+        int legNo = Integer.parseInt(legStr);
+        BookingConfirmation c = bookingService.bookSeat(
+                flight, LocalDate.parse(dateStr), legNo, seatNo, name, phone);
+        System.out.println("Booking confirmed:");
+        List<String[]> tableRows = new ArrayList<>();
+        tableRows.add(new String[]{c.flightNumber(), String.valueOf(c.legNo()),
+                c.date().toString(), c.seatNo(), c.customerName(), c.customerPhone()});
+        printTable(new String[]{"FLIGHT", "LEG", "DATE", "SEAT", "NAME", "PHONE"}, tableRows);
+    }
+
     private static void printTable(String[] headers, List<String[]> rows) {
         int cols = headers.length;
         int[] w = new int[cols];
@@ -296,6 +320,8 @@ public class Milestone2CommandLineRunner implements ApplicationRunner {
                   passenger(name="Jane Smith");                — all booked legs for a passenger by name
                   passenger(phone="5551234567");               — all booked legs for a passenger by phone
                   utilization("2026-05-01", "2026-05-31");     — total flights per airplane for a date range
+                  book(flight="AA3478", date="2026-05-01", leg=1, seat="14B", name="John Doe", phone="5559876543");
+                                                               — reserve a seat on a scheduled flight leg
                   help;
                   exit;
                 """);
