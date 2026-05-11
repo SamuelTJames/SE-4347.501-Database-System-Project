@@ -59,6 +59,9 @@ public class MVQueries
     	 
     	 try
     	 {
+    		 if(userInput.get(0).isBlank() || userInput.get(1).isBlank() || userInput.get(2).isBlank() || userInput.size() < 3)
+    			 throw new InvalidInputException("All input fields are required.");
+    		 
 	    	 ItineraryResults ir = itineraryService.findItineraries(userInput.get(0), userInput.get(1));
 	    	 
 	    	 LocalDate userDate = LocalDate.parse(userInput.get(2));
@@ -87,7 +90,7 @@ public class MVQueries
 	    		 DirectItinerary flightTwo = osi.secondLeg();
 	    		 List<LocalDate> possDates = legInstanceRepository.findDatesByFlightNumber(flightOne.flightNumber());
 	    		 for(LocalDate i : possDates)
-	    		 	if(((int) Math.abs(Duration.between(flightOne.scheduledDepTime(), flightTwo.scheduledDepTime()).toMinutes())) >= 60 && i.equals(userDate))
+	    		 	if(((int) Math.abs(Duration.between(flightOne.scheduledArrTime(), flightTwo.scheduledDepTime()).toMinutes())) >= 60 && i.equals(userDate))
 	    			 	oneStopFlights = oneStopFlights +
 										"Flight 1 Airline: " +
 										flightOne.airline() +
@@ -115,8 +118,9 @@ public class MVQueries
 			 display.add(directFlights);
 			 display.add(oneStopFlights);
     	}
-		catch(NotFoundException | InvalidInputException e)
+		catch(NotFoundException | InvalidInputException | DateTimeParseException e)
 		{
+			display.clear();
 			display.add("Error: ");
 			display.add(e.getMessage());
 		}
@@ -127,10 +131,15 @@ public class MVQueries
     //2b Flight deatils from flight number and date
     public String numFlightSearch(List<String> userInput)
     {
-    	String display = "Error: Flight with given date not found";
+    	String display;
     	
     	try
     	{
+   		 	if(userInput.get(0).isBlank() || userInput.get(1).isBlank() || userInput.size() < 2)
+   		 		throw new InvalidInputException("All input fields are required.");
+   		 	
+   		 	display = "";
+   		 	
 	    	FlightDetails fd = flightQueryService.getFlightByNumber(userInput.get(0));
 	    	List<LocalDate> possDates = legInstanceRepository.findDatesByFlightNumber(userInput.get(0));
 	    	
@@ -150,8 +159,10 @@ public class MVQueries
 	    					  String.valueOf(l.scheduledArrTime());
 	    			break;
 	    		}
+	    	if(display.isBlank())
+	    		throw new NotFoundException("Flight on given date not found.");
     	}
-    	catch(NotFoundException | InvalidInputException e)
+    	catch(NotFoundException | InvalidInputException | DateTimeParseException e)
     	{
     		display = "Error: " + e.getMessage();
     	}
@@ -163,39 +174,39 @@ public class MVQueries
     public String aircraftUtilizationReport(List<String> userInput)
     {
     	String display;
-    	
-    	int index = 0, count = 0;
-    	
+    	    	
     	try
     	{
+   		 	if(userInput.get(0).isBlank() || userInput.get(1).isBlank() || userInput.get(2).isBlank() || userInput.size() < 3)
+   		 		throw new InvalidInputException("All input fields are required.");
+    		
 	    	List<AircraftUtilization> airUtiList = aircraftUtilizationService.getUtilizationReport(
 	                LocalDate.parse(userInput.get(1)), LocalDate.parse(userInput.get(2)));
+	    	
+	    	AircraftUtilization au = null;
 	    	
 	    	for(AircraftUtilization a : airUtiList)
 	    	{
 	    		if(a.airplaneId().equals(userInput.get(0)))
 	    		{
-	    			index = count;
+	    			au = a;
 	    			break;
-	    		}
-	    		else
-	    		{
-	    			count++;
 	    		}
 	    	}
 	    	
-	    	AircraftUtilization au = airUtiList.get(index);
+	    	if(au == null)
+	    		throw new NotFoundException("Aircraft with given registration number not found.");
 	    	
 	    	display =   //"Airplane: " +
 	    				//Add Airplane name output here
-	    				"\nType: " +
+	    				"Type: " +
 	    				au.airplaneType() +
 	    				"\nRegistration Number: " +
 	    				userInput.get(0) +
 	    				"\nNumber of Flights: " +
 	    				String.valueOf(au.totalFlights());
     	}
-    	catch(DateTimeParseException | InvalidInputException e)
+    	catch(DateTimeParseException | InvalidInputException | NotFoundException e)
     	{
     		display = "Error: " + e.getMessage();
     	}
@@ -210,12 +221,15 @@ public class MVQueries
     	
     	try
     	{
+   		 if(userInput.get(0).isBlank() || userInput.get(1).isBlank() || userInput.size() < 2)
+			 throw new InvalidInputException("All input fields are required.");
+   		 
 		List<SeatAvailability> sa = bookingService.checkSeatAvailability(userInput.get(0), LocalDate.parse(userInput.get(1)));
 		
     	display = "Seats Remaining: " + 
     				String.valueOf(sa.get(0).remainingSeats());
     	}
-    	catch(NotFoundException | InvalidInputException e)
+    	catch(NotFoundException | InvalidInputException | DateTimeParseException e)
     	{
     		display = "Error: " + e.getMessage();
     	}
@@ -230,6 +244,9 @@ public class MVQueries
     		
     	try
     	{
+   		 if(userInput.get(0).isBlank() || userInput.get(1).isBlank() || userInput.get(2).isBlank() || userInput.get(3).isBlank() || userInput.get(4).isBlank() || userInput.size() < 5)
+			 throw new InvalidInputException("All input fields are required.");
+   		 
     		FlightDetails fd = flightQueryService.getFlightByNumber(userInput.get(0));
         	
         	FlightLegSummary l = fd.legs().get(0);
@@ -258,6 +275,9 @@ public class MVQueries
     	
     	try
     	{
+   		 if(userInput.isBlank())
+			 throw new InvalidInputException("All input fields are required.");
+   		 
     		if(userInput.charAt(0) >= 48 && userInput.charAt(0) <= 57)
     		{
     			pasItiEntry = bookingService.getPassengerItinerary(null, userInput);

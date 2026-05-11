@@ -190,17 +190,10 @@ public class MainView extends VerticalLayout {
         });
         
         checkSeatButton.addClickListener(event -> {
-        	if(seatParameter.getValue() == "" || seatParameter2.getValue() == "")
-        	{
-        		seatInfo.setValue("Missing Information");
-        	}
-        	else
-        	{
-        		userInput.add(seatParameter.getValue());
-            	userInput.add(seatParameter2.getValue());
+        	userInput.add(seatParameter.getValue());
+            userInput.add(seatParameter2.getValue());
             	
-            	seatInfo.setValue(mvq.seatAvailability(userInput));
-        	}
+            seatInfo.setValue(mvq.seatAvailability(userInput));
         	
         	userInput.clear();
         });
