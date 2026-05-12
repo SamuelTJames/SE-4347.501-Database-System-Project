@@ -7,7 +7,7 @@ Current version includes Milestone 2 backend features (services, REST, CLI, and 
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
 
-That's it. Java and Maven are not required locally — they run inside Docker during the build.
+That's it. Java and Maven are not required locally, they run inside Docker during the build.
 The build uses **Java 21** (LTS) for portability across local toolchains and CI.
 
 ## Setup
@@ -47,6 +47,30 @@ The REST API is available while the CLI is running:
 |----------|---------------------------------------------|
 | API Docs | http://localhost:8080/swagger-ui/index.html |
 | Health   | http://localhost:8081/actuator/health       |
+
+## Web GUI
+
+After Startup, enter the following in the web address bar of any browser:
+
+```
+localhost:8080
+```
+or
+```
+127.0.0.1:8080
+```
+
+Select the desired command using the dropdown, enter the information indicated, and press Go
+To check seat Availability, a Flight must be queried first, by either Origin to Destination or Flight Number Flight
+
+Sample Reqests:            1st Box    2nd Box        3rd Box        4th Box         5th Box
+- Origin to Destination:   DFW        SFO            2026-05-01
+- Flight Number Flight:    AA3478     2026-05-01
+- Check Seat Availability: AA3478     2026-05-01
+- Infrastructure Report:   N101AA     2026-05-01     2026-05-31
+- Book a Seat:			   AA3478     2026-05-01     12B            John Smith     5556789012
+- Itinerary Retrieval:     Jane Smith
+- Itinerary Retrieval:     5551234567
 
 ## Interactive CLI
 
@@ -259,4 +283,11 @@ backend/src/main/java/com/se4347/database_system_project/
 ├── domain/                                 # JPA entities (unchanged)
 ├── exception/                              # NotFoundException, InvalidInputException
 └── service/                                # Business logic (read-only @Transactional)
+```
+## Project layout (frontend)
+```
+backend/src/main/
+├── frontend/								# Vaaden Generated Java to Web Controller
+├── java/
+|   └── ui/									# Website Definition and Logic
 ```

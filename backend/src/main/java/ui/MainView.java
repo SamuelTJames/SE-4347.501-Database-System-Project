@@ -28,7 +28,7 @@ public class MainView extends VerticalLayout {
         
         Select<String> functSelect = new Select<>();
         functSelect.setLabel("Execute Command");
-        functSelect.setItems("From Two Destinations Flight Search", "From One Destination Flight Search",
+        functSelect.setItems("Origin to Destination Flight Search", "Flight Number Flight Search",
                 "Infrastructure Report", "Book a Seat", "Itinerary Retrieval");
         functSelect.setValue("Itinerary Retrieval");
         
@@ -55,6 +55,8 @@ public class MainView extends VerticalLayout {
         seatInfo.setMinRows(5);
         seatInfo.setMaxRows(10);
 
+        parameter1.setLabel("Name or Phone Number");
+		parameter1.setHelperText("First Last or 1234567890");
         //parameter1.setVisible(false);
         parameter2.setVisible(false);
         parameter3.setVisible(false);
@@ -77,18 +79,52 @@ public class MainView extends VerticalLayout {
             parameter5.setVisible(false);
             
         	String value = event.getValue();
-        	if(value.equals("From One Destination Flight Search"))
-        		parameter2.setVisible(true);
-        	else if(value.equals("From Two Destinations Flight Search") || value.equals("Infrastructure Report")) {
+        	if(value.equals("Origin to Destination Flight Search")){
+        		parameter1.setLabel("Depart Code");
+        		parameter1.setHelperText("XXX");
+        		parameter2.setLabel("Arrival Code");
+        		parameter2.setHelperText("XXX");
+        		parameter3.setLabel("Depart Date");
+        		parameter3.setHelperText("YYYY-MM-DD");
         		parameter2.setVisible(true);
         		parameter3.setVisible(true);
         	}
-        	else if(value.equals("Book a Seat")) 
-        	{
+        	else if(value.equals("Flight Number Flight Search")) {
+        		parameter1.setLabel("Flight Number");
+        		parameter1.setHelperText("XX1234");
+        		parameter2.setLabel("Depart Date");
+        		parameter2.setHelperText("YYYY-MM-DD");
+        		parameter2.setVisible(true);
+        	}
+        	else if(value.equals("Infrastructure Report")) {
+        		parameter1.setLabel("Registration Number");
+        		parameter1.setHelperText("X123XX");
+        		parameter2.setLabel("Start Date");
+        		parameter2.setHelperText("YYYY-MM-DD");
+        		parameter3.setLabel("End Date");
+        		parameter3.setHelperText("YYYY-MM-DD");
+        		parameter2.setVisible(true);
+        		parameter3.setVisible(true);
+        	}
+        	else if(value.equals("Book a Seat")) {
+        		parameter1.setLabel("Flight Number");
+        		parameter1.setHelperText("XX1234");
+        		parameter2.setLabel("Date of Flight");
+        		parameter2.setHelperText("YYYY-MM-DD");
+        		parameter3.setLabel("Seat Number");
+        		parameter3.setHelperText("12X");
+        		parameter4.setLabel("Name");
+        		parameter4.setHelperText("First Last");
+        		parameter5.setLabel("Phone Number");
+        		parameter5.setHelperText("1234567890");
         		parameter2.setVisible(true);
         		parameter3.setVisible(true);
         		parameter4.setVisible(true);
         		parameter5.setVisible(true);
+        	}
+        	else if(value.equals("Itinerary Retrieval")) {
+        		parameter1.setLabel("Name or Phone Number");
+        		parameter1.setHelperText("First Last or 1234567890");
         	}
         });
         
@@ -98,7 +134,7 @@ public class MainView extends VerticalLayout {
         	String funct = functSelect.getValue();
         	
         	if (funct == null) info.setValue("Set desired Function\n");
-        	else if(funct.equals("From Two Destinations Flight Search")) /*function call*/{
+        	else if(funct.equals("Origin to Destination Flight Search")) /*function call*/{
         		userInput.add(parameter1.getValue());
             	userInput.add(parameter2.getValue());
             	userInput.add(parameter3.getValue());
@@ -109,7 +145,7 @@ public class MainView extends VerticalLayout {
                  	
             	userInput.clear();
         	}
-        	else if(funct.equals("From One Destination Flight Search")) {
+        	else if(funct.equals("Flight Number Flight Search")) {
         		userInput.add(parameter1.getValue());
             	userInput.add(parameter2.getValue());
             	
@@ -141,26 +177,23 @@ public class MainView extends VerticalLayout {
                 info.setValue(mvq.passengerItineraryRetrieval(parameter1.getValue()));
         	}
 
-        	if(funct.equals("From One Destination Flight Search") || funct.equals("From Two Destinations Flight Search")) {
+        	if(funct.equals("Flight Number Flight Search") || funct.equals("Origin to Destination Flight Search")) {
                 seatParameter.setVisible(true);
                 seatParameter2.setVisible(true);
                 checkSeatButton.setVisible(true);
                 seatInfo.setVisible(true);
+                seatParameter.setLabel("Flight Number");
+                seatParameter.setHelperText("XX1234");
+                seatParameter2.setLabel("Flight Date");
+                seatParameter2.setHelperText("YYYY-MM-DD");
         	}
         });
         
         checkSeatButton.addClickListener(event -> {
-        	if(seatParameter.getValue() == "" || seatParameter2.getValue() == "")
-        	{
-        		seatInfo.setValue("Missing Information");
-        	}
-        	else
-        	{
-        		userInput.add(seatParameter.getValue());
-            	userInput.add(seatParameter2.getValue());
+        	userInput.add(seatParameter.getValue());
+            userInput.add(seatParameter2.getValue());
             	
-            	seatInfo.setValue(mvq.seatAvailability(userInput));
-        	}
+            seatInfo.setValue(mvq.seatAvailability(userInput));
         	
         	userInput.clear();
         });
